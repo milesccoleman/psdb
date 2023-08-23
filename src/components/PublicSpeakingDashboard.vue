@@ -1158,7 +1158,7 @@ color: #f48d79;
 background-color: #222831; 
 width: 80%;  
 text-align: left; 
-overflow: scroll; 
+overflow: auto; 
 height: 170px; 
 font-size: 25px;
 margin-top: 0px;
