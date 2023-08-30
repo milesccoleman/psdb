@@ -27,7 +27,7 @@
 				<option value="3600000">60 Min</option> 
 			</select>
 		</span>
-		<button id="begin" v-if="show3" v-on:click="begin(); selectWPM(); selectTextEmotion(); selectVoiceEmotion(); selectFaceEmotion()">Begin</button><button id="start"  v-if="!show3" v-on:click="initiateVoiceControl">Start</button><button id="stop" v-if="!showStop" v-on:click="stopVoiceControl">Stop</button><button id="reset"  v-if="!show3" v-on:click="reset">Reset</button></span>
+		<button id="begin" v-if="show3" v-on:click="begin(); selectWPM(); selectTextEmotion(); selectVoiceEmotion(); selectFaceEmotion()">Begin</button><button id="start"  v-if="!show3" v-on:click="initiateVoiceControl">Start</button><button id="stop" v-if="!showStop" v-on:click="stopVoiceControl">Stop</button><button id="reset"  v-if="!show3" v-on:click="reset">Reset</button><button id="pdf"  v-if="!show5" v-on:click="pdfResults">Save</button></span>
 		<!--<br><button id="next" v-if="!show" v-on:click="next">Next</button>--><br>
 		<span id="rawData"></span>
 		<button v-if="!showTime" class="title" id="timer">{{ time }}</button>
@@ -104,6 +104,7 @@ export default {
 			showStop: true,  
 			loading: true,
 			show4: true,
+			show5: true, 
 			showWPM: true,
 			showTextEmotion: true,
 			showTime: true,
@@ -345,6 +346,7 @@ export default {
 						this.showStop = false
 						this.visualizeData()
 						console.log("app started")
+						this.show5 = true
 						
 						// if (this.analyzingFace == false){this.analyzeFace()}
 					} 
@@ -355,6 +357,7 @@ export default {
 						console.log("app stopped")
 						recognition.stop()
 						this.stop = false
+						this.show5 = false
 					}
 					}
 					else {
@@ -575,7 +578,11 @@ export default {
 			var div = document.getElementById('rawData');
 			div.innerHTML += this.currentDataObject;
 			this.overallDataObject = document.getElementById("rawData").innerHTML
-		},  
+		},
+		
+		pdfResults: function () {
+		window.print(); 
+		}, 
 		
 		visualizeData: function () {
 				var overallRawData = document.getElementById("rawData").innerHTML
@@ -1135,6 +1142,22 @@ margin: 10px;
 background-color: lightyellow; 
 }
 
+#pdf {
+background-color: #c300ff; 
+border: none; 
+height: 50px; 
+width: 100px; 
+font-weight: bold; 
+color: black; 
+font-family: Arial, sans-serif;
+font-size: 20px; 
+margin: 10px; 
+}
+
+#pdf:hover {
+background-color: #00ffc3; 
+}
+
 #next {
 background-color: #7766c6; 
 border: none; 
@@ -1401,5 +1424,13 @@ display: flex;
 #bugs {
 color: white; 
 font-size: 12px; 
+}
+
+@page {
+  size: A3 landscape;
+  counter-increment: page;
+  margin: none; 
+  
+
 }
 </style>
