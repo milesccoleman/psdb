@@ -410,7 +410,7 @@ export default {
 				const resizedResults = faceapi.resizeResults(detections, displaySize)
 				faceapi.draw.drawDetections(canvas, resizedDetections);
 				
-				const minProbability = 0.05
+				const minProbability = 0.01
 				faceapi.draw.drawFaceExpressions(canvas, resizedResults, minProbability)
 			
 				if (resizedDetections && Object.keys(resizedDetections).length > 0) {
