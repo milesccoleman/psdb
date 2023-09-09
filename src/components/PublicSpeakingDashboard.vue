@@ -301,7 +301,7 @@ export default {
 			console.log('Voice recognition initiated')
 			window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
 			window.SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList; //
-			window.SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent; //
+			window.SpeechRecognitionEvent = window.webkitSpeechRecognitionEvent || window.SpeechRecognitionEvent; //
 			
 			let finalTranscript = '';
 			let recognition = new window.SpeechRecognition();
