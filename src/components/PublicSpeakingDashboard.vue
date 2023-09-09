@@ -335,7 +335,7 @@ export default {
 				this.wordCount = this.countWords(this.output)
 				this.totalWords = this.wordCount
 		},
-			recognition.start()
+			this.restartInterval = window.setInterval(recognition.start(), 500)
 			
 				if ((this.textEmotionSelected == true || this.WPMSelected == true) || (this.voiceEmotionSelected == true || this.faceEmotionSelected == true))	 {
 					this.msg3 = ""
@@ -355,6 +355,7 @@ export default {
 					} 
 					if (this.stop == true) {
 						clearInterval(this.grabTimeInterval)
+						clearInterval(this.restartInterval)
 						this.showTime = false
 						this.continuous = true
 						console.log("app stopped")
@@ -368,6 +369,7 @@ export default {
 					}
 
 		},
+		
 		
 		analyzeFace: function () {
 			this.showProcess = false
