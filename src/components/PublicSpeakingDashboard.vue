@@ -1,11 +1,11 @@
 <template>
   <div id="body" class="dashboard">
   <p v-if="!loading" id="loadingContainer">Initializing <br><img id="loading" src="https://media.giphy.com/media/Ky5F5Rhn1WRVZmvE5W/giphy.gif"><br><span id="initialMessage">(Make sure your webcam is facing you.)</span></p>
-    <h1 id="mainTitle"> <img id="talking" alt="image of voice waves leaving someone's mouth. Attribution: Speak Icon, by Voysla, 'https://www.flaticon.com/free-icons/speak'" src="talking.png"> {{ msg }} </h1>
-		<p id="messageTwo">
+    <h1 v-if="showProcess" id="mainTitle"> <img id="talking" alt="image of voice waves leaving someone's mouth. Attribution: Speak Icon, by Voysla, 'https://www.flaticon.com/free-icons/speak'" src="talking.png"> {{ msg }} </h1>
+		<p v-if="showProcess" id="messageTwo">
 			{{ msg2 }} 
 		</p>
-		<p id="messageThree"> 
+		<p v-if="showProcess" id="messageThree"> 
 			{{ msg3 }} 
 		</p>
 		<span id="timeHolder">Time: </span>
@@ -27,7 +27,7 @@
 				<option value="3600000">60 Min</option> 
 			</select>
 		</span>
-		<button id="begin" v-if="show3" v-on:click="begin(); selectWPM(); selectTextEmotion(); selectVoiceEmotion(); selectFaceEmotion()">Begin</button><button id="start"  v-if="!show3" v-on:click="initiateVoiceControl">Start</button><button id="stop" v-if="!showStop" v-on:click="stopVoiceControl">Stop</button><button id="reset"  v-if="!show3" v-on:click="reset">Reset</button><button id="pdf"  v-if="!show5" v-on:click="pdfResults">Save</button></span>
+		<button id="begin" v-if="showBegin" v-on:click="begin(); selectWPM(); selectTextEmotion(); selectVoiceEmotion(); selectFaceEmotion()">Begin</button><button id="start"  v-if="!show3" v-on:click="initiateVoiceControl">Start</button><button id="stop" v-if="!showStop" v-on:click="stopVoiceControl">Stop</button><button id="reset"  v-if="!show3" v-on:click="reset">Reset</button><button id="pdf"  v-if="!show5" v-on:click="pdfResults">Save</button></span>
 		<!--<br><button id="next" v-if="!show" v-on:click="next">Next</button>--><br>
 		<span id="rawData"></span>
 		<button v-if="!showTime" class="title" id="timer">{{ time }}</button>
@@ -102,6 +102,8 @@ export default {
 			show: true, 
 			show2: true, 
 			show3: true,
+			showProcess: true,
+			showBegin: true,  
 			showStop: true,  
 			loading: true,
 			show4: true,
@@ -159,7 +161,6 @@ export default {
 			let recognition = new window.SpeechRecognition();
 			recognition.start()
 			this.show = false
-			this.show3 = false
 			this.msg2 = ''
 			this.msg3 = 'Choose a desired speech length. Click start. Then, click stop when finished.'
 			console.log("Dashboard page loaded")
@@ -374,6 +375,8 @@ export default {
 		},
 		
 		analyzeFace: function () {
+			this.showProcess = false
+			this.showBegin = false
 			const video = document.querySelector("video");
 			this.loading = false
 			const videoContainer = document.getElementById("video-container");
@@ -431,6 +434,8 @@ export default {
 				
 				if (this.loading == false) {
 					this.loading = true
+					this.show3 = false
+					this.showProcess = true
 				}
 			}
 				
