@@ -355,7 +355,6 @@ export default {
 					} 
 					if (this.stop == true) {
 						clearInterval(this.grabTimeInterval)
-						clearInterval(this.restartInterval)
 						this.showTime = false
 						this.continuous = true
 						console.log("app stopped")
@@ -368,10 +367,6 @@ export default {
 						this.msg2 = 'No input data selected. Try selecting words per minute or another parameter.'
 					}
 
-		},
-		
-		setRestartLoop: function () {
-			this.restartInterval = window.setInterval(this.initiateVoiceControl, 500)
 		},
 		
 		analyzeFace: function () {
