@@ -97,7 +97,6 @@ export default {
 			boredom: 0, 
 			sadness: 0, 
 			happiness: 0, 
-			continuous: true, 
 			show: true, 
 			show2: true, 
 			show3: true,
@@ -308,7 +307,7 @@ export default {
 			let recognition = new window.SpeechRecognition();
 			recognition.interimResults = true; 
 			recognition.maxAlternatives = 10;
-			recognition.continuous = this.continuous;
+			recognition.continuous = true
 			recognition.onresult = (event) => {
 				let interimTranscript = '';
 				for (let i = event.resultIndex, len = event.results.length; i < len; i++) {
@@ -359,7 +358,6 @@ export default {
 					if (this.stop == true) {
 						clearInterval(this.grabTimeInterval)
 						this.showTime = false
-						this.continuous = true
 						console.log("app stopped")
 						recognition.stop()
 						this.stop = false
@@ -535,7 +533,6 @@ export default {
 		
 		stopVoiceControl: function () {
 		//reset speech recognition so it can stop and clear original timers
-			this.continuous = false
 			this.stop = true
 			this.time1 = false
 			if (this.time2 == true) {
