@@ -322,7 +322,6 @@ export default {
 						var elem = document.getElementById('output');
 						elem.scrollTop = elem.scrollHeight;
 						console.log("Detected speech:" + this.workingOutput)
-						recognition.start()
 					}
 				} else {
 				interimTranscript += transcript;
@@ -334,10 +333,6 @@ export default {
 				this.totalWords = this.wordCount
 		},
 			recognition.start()
-			
-			recognition.addEventListener("audioend", () => {
-				recognition.start()
-			});
 			
 				if ((this.textEmotionSelected == true || this.WPMSelected == true) || (this.voiceEmotionSelected == true || this.faceEmotionSelected == true))	 {
 					this.msg3 = ""
