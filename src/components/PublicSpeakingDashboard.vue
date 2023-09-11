@@ -53,8 +53,7 @@
 					<div id="bugs">
 					<section>If you find a bug please report it here: <a href="https://rowan.co1.qualtrics.com/jfe/form/SV_8AhIsft05UgIUqW">Bug/Error Report Form</a></section>
 					<br> Known Bugs and Limitations: <br>
-						<section>- Current version "skips" during voice recognition on mobile (but works correctly on desktop).</section>
-						<section>- App works on Google Chrome (other browsers are currently untested).</section>
+						<section>- Current version of app works only Google Chrome on desktop</section>
 						<section>- User needs to speak for at least 20 seconds before meaningful results are produced.</section>
 					</div>
 			</section>
@@ -147,7 +146,15 @@ export default {
 	},
 	
 	created: function () {
+	if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 	console.log("Landing page loaded")
+	console.log("Speech recognition supported.")
+	} else {
+	console.log("Landing page loaded")
+	console.log("Speech recognition not supported.")
+	this.msg2 = "Public Speaking Dashboard is not supported by this browser and/or device. Currently, Public Speaking Dashboard only works on desktop and in the Chrome browser."
+	this.showBegin = false
+	}
 	}, 
 
 	methods: {
