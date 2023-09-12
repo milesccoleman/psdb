@@ -44,7 +44,10 @@
 		<span v-if="!showWPM" id="wpmChart"></span>
 		<span v-if="!showVolume" id="volumeChart"></span>
 		<span v-if="!showFaceEmotion" id="faceEmotionChart"></span>
+		<span v-if="!showTextEmotion" id="readabilityChart"></span>
+<!-- 
 		<span v-if="!showTextEmotion" id="textEmotionChart"></span>
+ -->
 		
 		
 		
@@ -62,7 +65,8 @@
 </template>
 
 <script>
-import paralleldots from 'paralleldots'
+//import paralleldots from 'paralleldots'
+import * as rs from 'text-readability'
 import Plotly from 'plotly.js-dist'
 import * as faceapi from 'face-api.js'
 export default {
@@ -95,7 +99,8 @@ export default {
 			excitement: 0, 
 			boredom: 0, 
 			sadness: 0, 
-			happiness: 0, 
+			happiness: 0,
+			readability: 0, 
 			show: true, 
 			show2: true, 
 			show3: true,
@@ -141,14 +146,16 @@ export default {
 			faceHappy: 0, 
 			faceNeutral: 0,
 			faceSad: 0, 
-			faceSurprised: 0 
+			faceSurprised: 0, 
+			continuous: true, 
+			speechAgain: false
 		}
 	},
 	
 	created: function () {
 	if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 	console.log("Landing page loaded")
-	console.log("Speech recognition supported.")
+	console.log("Speech recognition supported")
 	} else {
 	console.log("Landing page loaded")
 	console.log("Speech recognition not supported.")
@@ -329,6 +336,7 @@ export default {
 						var elem = document.getElementById('output');
 						elem.scrollTop = elem.scrollHeight;
 						console.log("Detected speech:" + this.workingOutput)
+						recognition.start()
 					}
 				} else {
 				interimTranscript += transcript;
@@ -339,8 +347,9 @@ export default {
 				this.wordCount = this.countWords(this.output)
 				this.totalWords = this.wordCount
 		},
-			recognition.start()
 			
+		recognition.start()	
+						
 				if ((this.textEmotionSelected == true || this.WPMSelected == true) || (this.voiceEmotionSelected == true || this.faceEmotionSelected == true))	 {
 					this.msg3 = ""
 					if (this.stop == false) {
@@ -355,15 +364,19 @@ export default {
 						console.log("app started")
 						this.show5 = true
 						
+							
+
+									
 						// if (this.analyzingFace == false){this.analyzeFace()}
 					} 
 					if (this.stop == true) {
+						recognition.stop()
 						clearInterval(this.grabTimeInterval)
 						this.showTime = false
 						console.log("app stopped")
-						recognition.stop()
 						this.stop = false
 						this.show5 = false
+						
 					}
 					}
 					else {
@@ -512,26 +525,31 @@ export default {
 			this.wpm = Math.round(this.wordCount/(this.timeElapsed/1000) * 60) 
 		},
 		
-		getEmotionStats: function () {
+		//getEmotionStats: function () {
 		//send transcript data to be evaluated as per emotional content
-			const pd = require('paralleldots' || paralleldots)
-			pd.apiKey = "hL7rOIhghKLZtrI6w04cFjxVvAOHQ7BiNhjMLAVnMPw";
-			pd.emotion(this.workingOutput,"en")
-			.then((response) => {
-				let obj = JSON.parse(response)
-				this.textEmotionData = response.slice(1)
-				this.anger = Math.round(obj.emotion.Angry * 100) 
-				this.fear = Math.round(obj.emotion.Fear * 100) 
-				this.excitement = Math.round(obj.emotion.Excited * 100)
-				this.boredom = Math.round(obj.emotion.Bored * 100)
-				this.sadness = Math.round(obj.emotion.Sad * 100)
-				this.happiness = Math.round(obj.emotion.Happy * 100)
-			})
-				.catch((error) => {
-				console.log(error);
-			})
+			// const pd = require('paralleldots' || paralleldots)
+// 			pd.apiKey = "hL7rOIhghKLZtrI6w04cFjxVvAOHQ7BiNhjMLAVnMPw";
+// 			pd.emotion(this.workingOutput,"en")
+// 			.then((response) => {
+// 				let obj = JSON.parse(response)
+// 				this.textEmotionData = response.slice(1)
+// 				this.anger = Math.round(obj.emotion.Angry * 100) 
+// 				this.fear = Math.round(obj.emotion.Fear * 100) 
+// 				this.excitement = Math.round(obj.emotion.Excited * 100)
+// 				this.boredom = Math.round(obj.emotion.Bored * 100)
+// 				this.sadness = Math.round(obj.emotion.Sad * 100)
+// 				this.happiness = Math.round(obj.emotion.Happy * 100)
+// 			})
+// 				.catch((error) => {
+// 				console.log(error);
+// 			})
 		
-		},  
+		//}, 
+		
+		getReadabilityStats: function () {
+		this.readability = rs.gunningFog(this.workingOutput)
+		console.log(this.readability + " " + this.workingOutput)
+		}, 
 		
 		stopVoiceControl: function () {
 		//reset speech recognition so it can stop and clear original timers
@@ -547,9 +565,9 @@ export default {
 				this.volumeInterval = null;
 			}
 			this.visualizeData()
-			this.initiateVoiceControl()
 			clearInterval(this.grabTimeInterval)
 			clearInterval(this.renderDataInterval)
+			this.initiateVoiceControl()
 			//clearInterval(this.analyzeFaceInterval)
 			//this.analyzingFace = false
 		}, 
@@ -570,7 +588,8 @@ export default {
 		
 			const promise1 = new Promise((resolve, reject) => {
 				this.setVolume()
-				this.getEmotionStats()
+				//this.getEmotionStats()
+				this.getReadabilityStats()
 				this.registerWPM()
 				resolve('Data rendered!');
 				reject('Data render failed')
@@ -579,16 +598,21 @@ export default {
 			promise1.then(() => {
 				this.constructJSON()
 				this.visualizeData()
+				this.resetWorkingOutput()
 				console.log("JSON and charts constructed");
 			});
 		}, 
 		
 		constructJSON: function() {		
-			this.currentDataObject = '{"time":' + '"' + this.workingTime + '"' + "," + '"wpm":' + '"' + this.wpm + '"' + "," + '"content":' + '"' + this.workingOutput + '"' + "," + '"Angry":' + this.anger + "," + '"Fear":' + this.fear + "," + '"Excited":' + this.excitement + "," + '"Bored":' + this.boredom + "," + '"Sad":' + this.sadness + "," + '"Happy":' + this.happiness + "," + '"volume":' + this.volumeValue + "," + '"faceAnger":' + this.faceAngry + "," + '"faceDisgust":' + this.faceDisgusted + "," + '"faceFear":' + this.faceFearful + "," + '"faceHappiness":' + this.faceHappy + "," + '"faceNeutral":' + this.faceNeutral + "," + '"faceSadness":' + this.faceSad + "," + '"faceSurprise":' + this.faceSurprised + "},"
+			this.currentDataObject = '{"time":' + '"' + this.workingTime + '"' + "," + '"wpm":' + '"' + this.wpm + '"' + "," + '"content":' + '"' + this.workingOutput + '"' + "," + '"Angry":' + this.anger + "," + '"Fear":' + this.fear + "," + '"Excited":' + this.excitement + "," + '"Bored":' + this.boredom + "," + '"Sad":' + this.sadness + "," + '"Happy":' + this.happiness + "," + '"volume":' + this.volumeValue + "," + '"readability":' + this.readability + "," + '"faceAnger":' + this.faceAngry + "," + '"faceDisgust":' + this.faceDisgusted + "," + '"faceFear":' + this.faceFearful + "," + '"faceHappiness":' + this.faceHappy + "," + '"faceNeutral":' + this.faceNeutral + "," + '"faceSadness":' + this.faceSad + "," + '"faceSurprise":' + this.faceSurprised + "},"
 			var div = document.getElementById('rawData');
 			div.innerHTML += this.currentDataObject;
 			this.overallDataObject = document.getElementById("rawData").innerHTML
 		},
+		
+		resetWorkingOutput: function () {
+			this.workingOutput = ""
+		}, 
 		
 		pdfResults: function () {
 		window.print(); 
@@ -754,6 +778,83 @@ export default {
 				Plotly.newPlot(volumeChart, [volume], layout3);
 			}
 			
+			//Readability
+			if (this.showVolume == false) {
+				
+				let readability = {
+					x: [],
+					y: [],
+					mode: "lines",
+					name: 'Volume', 
+					line: {
+						color: '#40D0E0',
+						width: 2
+					}
+				};
+				
+				data.forEach(function(val) {
+				readability.x.push(val["time"]);
+				readability.y.push(val["readability"]);
+				});
+				
+				var layout5 = {
+				paper_bgcolor: "#222831",
+				plot_bgcolor: "#222831",
+				title: {
+					text:'Accessibility of Words Spoken',
+					font: {
+					family: 'Arial, sans-serif',
+					size: 20, 
+					color: '#fdfd96', 
+				},
+					xref: 'paper',
+					automargin: true,
+					x: 0.6,
+					xanchor: 'center', 
+					y: 0.88, 
+					yanchor: 'top'
+				},
+				autosize: true,
+					xaxis: {
+						tickfont : {
+							size : 16,
+							color : '#fdfd96'
+						},
+						tickcolor: '#36454f',
+						title: {
+							text: 'Time',
+							font: {
+							family: 'Arial, sans-serif',
+							size: 18,
+							color: '#fdfd96',
+							}
+						},
+					},
+					yaxis: {
+						margin: {
+							autoexpand: true,
+						},
+						automargin: true,
+						tickfont : {
+							size : 16,
+							color : '#fdfd96'
+						},
+						tickcolor: '#fdfd96',
+						title: {
+						text: 'Grade Level',
+							font: {
+							family: 'Arial, sans-serif',
+							size: 18,
+							color: '#fdfd96' 
+							}
+						}
+					}
+				};
+
+				var readabilityChart = document.getElementById('readabilityChart');
+				Plotly.newPlot(readabilityChart, [readability], layout5);
+			}
+			
 			//Emotions in Face
 			if (this.faceEmotionSelected == true) {
 				
@@ -822,6 +923,17 @@ export default {
 						width: 2
 					}
 				};
+				
+				let Disgusted = {
+					x: [],
+					y: [],
+					mode: "lines",
+					name: 'Disgust', 
+					line: {
+						color: '##FF5733',
+						width: 2
+					}
+				};
 
 				data.forEach(function(val) {
 				Angry.x.push(val["time"]);
@@ -836,6 +948,8 @@ export default {
 				Sad.y.push(val["faceSadness"]);
 				Happy.x.push(val["time"]);
 				Happy.y.push(val["faceHappiness"]);
+				Disgusted.x.push(val["time"]);
+				Disgusted.y.push(val["faceDisgust"]);
 				});
 				
 				var layout4 = {
@@ -893,150 +1007,150 @@ export default {
 				};
 
 				var FACEEMOTIONChart = document.getElementById('faceEmotionChart');
-				Plotly.newPlot(FACEEMOTIONChart, [Angry, Fearful, Excited, Bored, Sad, Happy], layout4);
+				Plotly.newPlot(FACEEMOTIONChart, [Angry, Fearful, Excited, Bored, Sad, Happy, Disgusted], layout4);
 			}
 			
-			//Emotions in Text
-			if (this.textEmotionSelected == true) {
-				
-				let Anger = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Anger', 
-					line: {
-						color: '#ff6961',
-						width: 2
-					}
-				};
-				
-				let Fear = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Fear', 
-					line: {
-						color: '#fdfd96',
-						width: 2
-					}
-				};
-				
-				let Excitement = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Excitement', 
-					line: {
-						color: '#ffb347',
-						width: 2
-					}
-				};
-				
-				let Boredom = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Boredom', 
-					line: {
-						color: '#cfcfc4',
-						width: 2
-					}
-				};
-				
-				let Sadness = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Sadness', 
-					line: {
-						color: '#85A1F2',
-						width: 2
-					}
-				};
-				
-				let Happiness = {
-					x: [],
-					y: [],
-					mode: "lines",
-					name: 'Happiness', 
-					line: {
-						color: '#77dd77',
-						width: 2
-					}
-				};
-
-				data.forEach(function(val) {
-				Anger.x.push(val["time"]);
-				Anger.y.push(val["Angry"]);
-				Fear.x.push(val["time"]);
-				Fear.y.push(val["Fear"]);
-				Excitement.x.push(val["time"]);
-				Excitement.y.push(val["Excited"]);
-				Boredom.x.push(val["time"]);
-				Boredom.y.push(val["Bored"]);
-				Sadness.x.push(val["time"]);
-				Sadness.y.push(val["Sad"]);
-				Happiness.x.push(val["time"]);
-				Happiness.y.push(val["Happy"]);
-				});
-				
-				var layout2 = {
-				paper_bgcolor: "#222831",
-				plot_bgcolor: "#222831",
-				title: {
-					text:'  Emotions in Words Spoken',
-					font: {
-					family: 'Arial, sans-serif',
-					size: 20, 
-					color: '#fdfd96', 
-				},
-					xref: 'paper',
-					automargin: true,
-					x: 0.6,
-					xanchor: 'center', 
-					y: 0.88, 
-					yanchor: 'top'
-				},
-				autosize: true,
-					xaxis: {
-						tickfont : {
-							size : 16,
-							color : '#fdfd96'
-						},
-						tickcolor: '#36454f',
-						title: {
-							text: 'Time',
-							font: {
-							family: 'Arial, sans-serif',
-							size: 18,
-							color: '#fdfd96',
-							}
-						},
-					},
-					yaxis: {
-						margin: {
-							autoexpand: true,
-						},
-						automargin: true,
-						tickfont : {
-							size : 16,
-							color : '#fdfd96'
-						},
-						tickcolor: '#fdfd96',
-						title: {
-						text: 'Emotions',
-							font: {
-							family: 'Arial, sans-serif',
-							size: 18,
-							color: '#fdfd96' 
-							}
-						}
-					}
-				};
-
-				var TEXTEMOTIONChart = document.getElementById('textEmotionChart');
-				Plotly.newPlot(TEXTEMOTIONChart, [Anger, Fear, Excitement, Boredom, Sadness, Happiness], layout2);
-			}
+			// Emotions in Text
+// 			if (this.textEmotionSelected == true) {
+// 				
+// 				let Anger = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Anger', 
+// 					line: {
+// 						color: '#ff6961',
+// 						width: 2
+// 					}
+// 				};
+// 				
+// 				let Fear = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Fear', 
+// 					line: {
+// 						color: '#fdfd96',
+// 						width: 2
+// 					}
+// 				};
+// 				
+// 				let Excitement = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Excitement', 
+// 					line: {
+// 						color: '#ffb347',
+// 						width: 2
+// 					}
+// 				};
+// 				
+// 				let Boredom = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Boredom', 
+// 					line: {
+// 						color: '#cfcfc4',
+// 						width: 2
+// 					}
+// 				};
+// 				
+// 				let Sadness = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Sadness', 
+// 					line: {
+// 						color: '#85A1F2',
+// 						width: 2
+// 					}
+// 				};
+// 				
+// 				let Happiness = {
+// 					x: [],
+// 					y: [],
+// 					mode: "lines",
+// 					name: 'Happiness', 
+// 					line: {
+// 						color: '#77dd77',
+// 						width: 2
+// 					}
+// 				};
+// 
+// 				data.forEach(function(val) {
+// 				Anger.x.push(val["time"]);
+// 				Anger.y.push(val["Angry"]);
+// 				Fear.x.push(val["time"]);
+// 				Fear.y.push(val["Fear"]);
+// 				Excitement.x.push(val["time"]);
+// 				Excitement.y.push(val["Excited"]);
+// 				Boredom.x.push(val["time"]);
+// 				Boredom.y.push(val["Bored"]);
+// 				Sadness.x.push(val["time"]);
+// 				Sadness.y.push(val["Sad"]);
+// 				Happiness.x.push(val["time"]);
+// 				Happiness.y.push(val["Happy"]);
+// 				});
+// 				
+// 				var layout2 = {
+// 				paper_bgcolor: "#222831",
+// 				plot_bgcolor: "#222831",
+// 				title: {
+// 					text:'  Emotions in Words Spoken',
+// 					font: {
+// 					family: 'Arial, sans-serif',
+// 					size: 20, 
+// 					color: '#fdfd96', 
+// 				},
+// 					xref: 'paper',
+// 					automargin: true,
+// 					x: 0.6,
+// 					xanchor: 'center', 
+// 					y: 0.88, 
+// 					yanchor: 'top'
+// 				},
+// 				autosize: true,
+// 					xaxis: {
+// 						tickfont : {
+// 							size : 16,
+// 							color : '#fdfd96'
+// 						},
+// 						tickcolor: '#36454f',
+// 						title: {
+// 							text: 'Time',
+// 							font: {
+// 							family: 'Arial, sans-serif',
+// 							size: 18,
+// 							color: '#fdfd96',
+// 							}
+// 						},
+// 					},
+// 					yaxis: {
+// 						margin: {
+// 							autoexpand: true,
+// 						},
+// 						automargin: true,
+// 						tickfont : {
+// 							size : 16,
+// 							color : '#fdfd96'
+// 						},
+// 						tickcolor: '#fdfd96',
+// 						title: {
+// 						text: 'Emotions',
+// 							font: {
+// 							family: 'Arial, sans-serif',
+// 							size: 18,
+// 							color: '#fdfd96' 
+// 							}
+// 						}
+// 					}
+// 				};
+// 
+// 				var TEXTEMOTIONChart = document.getElementById('textEmotionChart');
+// 				Plotly.newPlot(TEXTEMOTIONChart, [Anger, Fear, Excitement, Boredom, Sadness, Happiness], layout2);
+//			}
 		
 		}
 		
@@ -1199,6 +1313,14 @@ margin-bottom: 0px
 }
 
 #wpmChart {
+overflow: auto; 
+width: 80%; 
+display: inline-block;
+margin-top: 3px;
+margin-bottom: 0px; 
+}
+
+#readabilityChart {
 overflow: auto; 
 width: 80%; 
 display: inline-block;
