@@ -313,9 +313,9 @@ export default {
 		initiateVoiceControl: function () {
 		//start listening for words and making a transcript of detected words
 			console.log('Voice recognition initiated')
-			window.SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-			window.SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList; //
-			window.SpeechRecognitionEvent = window.webkitSpeechRecognitionEvent || window.SpeechRecognitionEvent; //
+			window.SpeechRecognition = window.webkitSpeechRecognition //|| window.SpeechRecognition;
+			window.SpeechGrammarList = window.webkitSpeechGrammarList //|| window.SpeechGrammarList; 
+			window.SpeechRecognitionEvent = window.webkitSpeechRecognitionEvent //|| window.SpeechRecognitionEvent; 
 			
 			let finalTranscript = '';
 			let recognition = new window.SpeechRecognition();
