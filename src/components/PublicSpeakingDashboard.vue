@@ -159,7 +159,7 @@ export default {
 	if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 	console.log("Landing page loaded")
 	console.log("Speech recognition supported")
-	console.log(this.API)
+	console.log(this.API + "changes?")
 	} else {
 	console.log("Landing page loaded")
 	console.log("Speech recognition not supported.")
