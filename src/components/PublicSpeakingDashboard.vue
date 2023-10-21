@@ -151,7 +151,7 @@ export default {
 			faceSurprised: 0, 
 			continuous: true, 
 			speechAgain: false, 
-			API: process.env.VUE_APP_ROOT_API2
+			API: process.env.VUE_APP_ROOT_API3
 		}
 	},
 	
