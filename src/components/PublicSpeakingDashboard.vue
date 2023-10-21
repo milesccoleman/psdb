@@ -69,6 +69,8 @@
 import * as rs from 'text-readability'
 import Plotly from 'plotly.js-dist'
 import * as faceapi from 'face-api.js'
+import dotenv from 'dotenv'
+dotenv.config()
 export default {
   name: 'publicSpeakingDashboard',
   props: {
@@ -148,7 +150,8 @@ export default {
 			faceSad: 0, 
 			faceSurprised: 0, 
 			continuous: true, 
-			speechAgain: false
+			speechAgain: false, 
+			API: process.env.VUE_APP_ROOT_API
 		}
 	},
 	
@@ -156,6 +159,7 @@ export default {
 	if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
 	console.log("Landing page loaded")
 	console.log("Speech recognition supported")
+	console.log(this.API)
 	} else {
 	console.log("Landing page loaded")
 	console.log("Speech recognition not supported.")
